@@ -1,5 +1,5 @@
 {
-    "name": "BetterViewer",
+    "name": "GoViewer",
     "version": "1.0.5",
     "manifest_version": 2,
     "background": {
@@ -9,11 +9,11 @@
         "persistent": true
     },
     "browser_action": {
-        "default_title": "BetterViewer"
+        "default_title": "GoViewer"
     },
     "browser_specific_settings": {
         "gecko": {
-            "id": "ademking@betterviewer",
+            "id": "goviewer@jaduastudios",
             "strict_min_version": "42.0"
         }
     },

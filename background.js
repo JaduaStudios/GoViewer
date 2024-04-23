@@ -13,6 +13,9 @@ let welcomeUrl = "https://betterviewer.surge.sh/welcome.html";
 
 // when tab is created or reloaded
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+
+ 
+    
     if (changeInfo.status == 'loading') {
         // check if tab is marked as injected
         if (InjectedTabs.includes(tabId)) {
@@ -45,7 +48,11 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
         let contentDispositionHeader = getHeaderFromHeaders(details.responseHeaders, 'content-disposition');
         let isContentDispositionAttachment = contentDispositionHeader && contentDispositionHeader.value.toLowerCase().includes('attachment');
 
+        
+
         let res = header && header.value.split(';', 1)[0];
+
+        
 
         if (res.indexOf('image') === -1) {
             // remove from injected list
@@ -61,12 +68,21 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
             // add tab to injected list
             InjectedTabs.push(details.tabId);
 
-            // clear 'content-security-policy'
+
+            // Remove "content-security-policy" header from the selected image to allow it to be loaded in the viewer
+            // Same idea from here : https://github.com/PhilGrayson/chrome-csp-disable/blob/master/background.js
+            // for (let i = 0; i < details.responseHeaders.length; i++) {
+            //     if (details.responseHeaders[i].name.toLowerCase() === 'content-security-policy') {
+            //         details.responseHeaders[i].value = '';
+            //     }
+            // }
+
             for (let respHeader of details.responseHeaders) {
                 if (respHeader.name.toLowerCase() === 'content-security-policy') {
                     respHeader.value = '';
                 }
             }
+
 
             return {
                 responseHeaders: details.responseHeaders
@@ -74,51 +90,25 @@ chrome.webRequest.onHeadersReceived.addListener(function (details) {
         }
     }
 }, {
-    urls: ['<all_urls>'],
+    urls: ['*://*/*'],
     types: ['main_frame']
 }, ['responseHeaders', 'blocking']);
 
-// run .onCompleted for local files
-chrome.webRequest.onCompleted.addListener(function (details) {
-    if (details.tabId !== -1) {
-        let header = getHeaderFromHeaders(details.responseHeaders, 'content-type');
 
-        // check if content-disposition is attachment, if it is, do not inject
-        let contentDispositionHeader = getHeaderFromHeaders(details.responseHeaders, 'content-disposition');
-        let isContentDispositionAttachment = contentDispositionHeader && contentDispositionHeader.value.toLowerCase().includes('attachment');
+// when the extension is installed or upgraded ...
+chrome.runtime.onInstalled.addListener(function (details) {
+    if (details.reason === "install") {
+        // Open when installeds
+        set_default_settings()
 
-        let res = header && header.value.split(';', 1)[0];
-
-        if (res.indexOf('image') === -1) {
-            // remove from injected list
-            InjectedTabs = InjectedTabs.filter(function (item) {
-                return item !== details.tabId;
-            });
-        }
-
-        // check if image
-        if (res && res.indexOf('image') !== -1 && InjectedTabs.indexOf(details.tabId) === -1 && !isContentDispositionAttachment) {
-
-            console.log(details);
-            // add tab to injected list
-            InjectedTabs.push(details.tabId);
-
-            // clear 'content-security-policy'
-            for (let respHeader of details.responseHeaders) {
-                if (respHeader.name.toLowerCase() === 'content-security-policy') {
-                    respHeader.value = '';
-                }
-            }
-
-            return {
-                responseHeaders: details.responseHeaders
-            };
-        }
+    } else if (details.reason === "update") {
+        set_default_settings();
+    } else if (details.reason === "chrome_update") {
+        // When browser is updated
+    } else if (details.reason === "shared_module_update") {
+        // When a shared module is updated
     }
-}, {
-    urls: ['file://*'],
-    types: ['main_frame']
-}, ['responseHeaders']);
+});
 
 // when any tab closed, remove it from injected list
 chrome.tabs.onRemoved.addListener(function (tabid, removed) {
@@ -159,7 +149,6 @@ function set_default_settings(){
             zoomOut: true,
             oneToOne: true,
             reset: true,
-            fitToScreen: true,
             play: true,
             rotateLeft: true,
             rotateRight: true,
@@ -182,82 +171,11 @@ function set_default_settings(){
             exit: true,
             about: true,
             zoom_ratio: 0.1, // 0.1 is +/- 10% Zoom, 0.5 is +/- 50% Zoom, etc...
-            upload_site: "imgbb", // imgbb, imgur
             notification_gravity: "top", // top, bottom
             notification_position: "right", // left, right
             toolbar_position: "bottom", // top, bottom
             default_theme: "blurred", // dark, light, blurred
             hide_all_at_start: false, // hide all toolbar buttons at start
-        }, shortcutHotkeys: {
-            zoomInToggle: true,
-            zoomOutToggle: true,
-            oneToOneToggle: true,
-            resetToggle: true,
-            fitToScreenToggle: true,
-            fullscreenToggle: true,
-            rotateLeftToggle: true,
-            rotateRightToggle: true,
-            flipHorizontalToggle: true,
-            flipVerticalToggle: true,
-            cropImageToggle: true,
-            photoEditorToggle: true,
-            downloadToggle: true,
-            uploadImageToggle: true,
-            colorPickerToggle: true,
-            detailsToggle: true,
-            themeToggle: true,
-            printImageToggle: true,
-            extractTextToggle: true,
-            photopeaToggle: true,
-            reverseSearchToggle: true,
-            helpToggle: true,
-            turnOffToggle: true,
-            zoom_in_mod: "mod", 
-            zoom_in_key:  "+",
-            zoom_out_mod: "mod",
-            zoom_out_key: "-",
-            one_to_one_mod: "mod",
-            one_to_one_key: "1",
-            reset_mod: "mod",
-            reset_key: "0",
-            fit_to_screen_mod: "mod",
-            fit_to_screen_key: "2",
-            fullscreen_mod: "mod",
-            fullscreen_key: "f",
-            rotate_left_mod: "mod",
-            rotate_left_key: "left",
-            rotate_right_mod: "mod",
-            rotate_right_key: "right",
-            flip_horizontal_mod: "mod",
-            flip_horizontal_key: "a",
-            flip_vertical_mod: "mod",
-            flip_vertical_key: "q",
-            crop_mod: "mod",
-            crop_key: "x",
-            photo_editor_mod: "mod",
-            photo_editor_key: "m",
-            download_mod: "mod",
-            download_key: "s",
-            upload_mod: "mod",
-            upload_key: "u",
-            color_picker_mod: "mod",
-            color_picker_key: "c",
-            details_mod: "mod",
-            details_key: "d",
-            theme_mod: "mod",
-            theme_key: "y",
-            print_mod: "mod",
-            print_key: "p",
-            extract_text_mod: "mod",
-            extract_text_key: "o",
-            photopea_mod: "mod",
-            photopea_key: "g",
-            reverse_search_mod: "mod",
-            reverse_search_key: "j",
-            help_mod: "mod",
-            help_key: "h",
-            turn_off_mod: "mod",
-            turn_off_key: "e",
-        },
+        }
     });
 }
