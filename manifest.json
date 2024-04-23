@@ -11,12 +11,18 @@
     "browser_action": {
         "default_title": "BetterViewer"
     },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "ademking@betterviewer",
+            "strict_min_version": "42.0"
+        }
+    },
     "permissions": [
         "webRequest",
         "webRequestBlocking",
         "activeTab",
         "storage",
-        "<all_urls>"
+        "*://*/*"
     ],
     "web_accessible_resources": [
         "pages/*"
