@@ -120,35 +120,6 @@ chrome.webRequest.onCompleted.addListener(function (details) {
     types: ['main_frame']
 }, ['responseHeaders']);
 
-
-// when the extension is installed or upgraded ...
-chrome.runtime.onInstalled.addListener(function (details) {
-    if (details.reason === "install") {
-        // Open when installeds
-        chrome.tabs.create({
-            url: "https://betterviewer.surge.sh/welcome.html"
-        });
-        set_default_settings()
-        // open when extension is uninstalled
-        let uninstallUrl = "https://forms.gle/CNhnnirVXK8tRNFX6"
-        if (chrome.runtime.setUninstallURL) {
-            chrome.runtime.setUninstallURL(uninstallUrl);
-        }
-
-    } else if (details.reason === "update") {
-        set_default_settings();
-        // set uninstall form url
-        let uninstallUrl = "https://forms.gle/CNhnnirVXK8tRNFX6"
-        if (chrome.runtime.setUninstallURL) {
-            chrome.runtime.setUninstallURL(uninstallUrl);
-        }
-    } else if (details.reason === "chrome_update") {
-        // When browser is updated
-    } else if (details.reason === "shared_module_update") {
-        // When a shared module is updated
-    }
-});
-
 // when any tab closed, remove it from injected list
 chrome.tabs.onRemoved.addListener(function (tabid, removed) {
     // remove tab from injected list   
