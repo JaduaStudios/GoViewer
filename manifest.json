@@ -1,7 +1,14 @@
 {
     "name": "GoViewer",
     "version": "1.0.5",
+	"description": "A brand new image viewer for the Jadua Go browser",
     "manifest_version": 2,
+	"browser_specific_settings": {
+        "gecko": {
+            "id": "goviewer@jaduastudios",
+            "strict_min_version": "101.0"
+        }
+    },
     "background": {
         "scripts": [
             "background.js"
@@ -10,12 +17,6 @@
     },
     "browser_action": {
         "default_title": "GoViewer"
-    },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "goviewer@jaduastudios",
-            "strict_min_version": "42.0"
-        }
     },
     "permissions": [
         "webRequest",
